@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+
+var util = require('util');
+var OptParser = require('../lib/OptParser');
+var ETSParser = require('../lib/ETSParser');
+var ETSWriter = require('../lib/ETSWriter');
+
+/**
+ * Generates a function for filtering out ETSI report items based on date of the
+ *   beginning of report period. If date is not specified, first day of current
+ *   month is taken as start date.
+ *
+ * @param   {Date}  [startDate]  Start date for report period. If not specified,
+ *   the first day of current moth wil be used
+ *
+ * @return  {function}           Filtering function that can be passed directly
+ *   to array.filter method
+ */
+function dateAfter (startDate) {
+
+    if (!(startDate instanceof Date)) {
+        console.warn('Start date for parsing events isn\'t specified. Defaulting to beginning of current month');
+        var today = new Date(Date.now());
+        startDate = new Date(today.getFullYear(), today.getMonth());
+    }
+
+    return function (etsiItem) {
+        return etsiItem.done >= startDate;
+    };
+}
+
+var options = OptParser.parse(process.argv, 2);
+
+if (!options.command || options.command !== 'parse') {
+    // 'parse' is the only one known command yet
+    console.log(OptParser.usage);
+}
+
+console.log(util.format("Parsing %s ...", options.source));
+
+ETSParser.parse(options.source)
+.done(function (parsed) {
+    var lines = parsed
+    .filter(dateAfter(options.since))
+    .map(function (parsedItem) {
+        // TODO: date format/locale from command line
+        var date = parsedItem.done ? parsedItem.done.toLocaleDateString('en-US') : '';
+        // NOTE: There is no estimate parsing/calculating implemented yet
+        var estimate = '';
+        var project = (parsedItem.project || '').replace(/ \/ /g, '. ');
+        var line = parsedItem.line || '';
+
+        var res = [date, estimate, (project === '' ? line : (project + '. ' + line))].join('\t');
+        return res;
+    });
+
+    options.target = options.target || (options.source + '.etsi');
+
+    console.log(util.format("Saving %d items to %s", parsed.length, options.target));
+    return ETSWriter.write(lines, options.target);
+});

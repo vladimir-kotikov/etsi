@@ -1,0 +1,27 @@
+{
+  "name": "etsi",
+  "version": "0.0.1",
+  "description": "An utility for dealing with ETS time reports",
+  "bin": "bin/etsi",
+  "main": "index.js",
+  "scripts": {
+    "test": "jshint bin lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vladimir-kotikov/etsi.git"
+  },
+  "author": "Vladimir Kotikov <kotikov.vladimir@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vladimir-kotikov/etsi/issues"
+  },
+  "homepage": "https://github.com/vladimir-kotikov/etsi#readme",
+  "devDependencies": {
+    "jshint": "^2.8.0"
+  },
+  "dependencies": {
+    "nopt": "^3.0.6",
+    "q": "^1.4.1"
+  }
+}
